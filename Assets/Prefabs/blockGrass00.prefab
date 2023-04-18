@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3024380115132187056}
   - component: {fileID: 1016748059862070650}
   - component: {fileID: 5851533771063331931}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: blockGrass00
   m_TagString: Untagged
   m_Icon: {fileID: 0}
