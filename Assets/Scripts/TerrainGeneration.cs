@@ -1,5 +1,6 @@
 using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class TerrainGeneration : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class TerrainGeneration : MonoBehaviour
     [Header("World Generation")]
     public int worldSize;
     public int dirtDepth;
+    public int chunkSize;
 
     [Header("Noise")]
     public float seed;
@@ -20,29 +22,52 @@ public class TerrainGeneration : MonoBehaviour
 
     private void Start()
     {
-        GenerateTerrain();
+        GenerateChunks();
     }
 
-    public void GenerateTerrain()
+    public void GenerateChunks()
     {
-        for (int x = 0; x < worldSize; x += 2)
+        seed = Random.Range(0.0f, 100000000.0f);
+
+        int chunkCount = worldSize / chunkSize;
+
+        for (int chkX = -chunkCount / 2; chkX < chunkCount / 2; chkX++)
         {
-            for (int z = 0; z < worldSize; z += 2)
+            for (int chkZ = -chunkCount / 2; chkZ < chunkCount / 2; chkZ++)
+            {
+                GameObject chunk = new GameObject();
+                chunk.name = "Chunk " + chkX.ToString() + ":" + chkZ.ToString();
+                chunk.transform.parent = transform;
+                chunk.transform.position = new Vector3(chkX * 2 * chunkSize, transform.position.y, chkZ * 2 * chunkSize);
+
+                GenerateChunkTerrain(chunk);
+            }         
+        }
+    }
+
+    private void GenerateChunkTerrain(GameObject chunk)
+    {
+        int xStart = (int)chunk.transform.position.x;
+        int zStart = (int)chunk.transform.position.z;
+
+        for (int x = xStart; x < xStart + 2 * chunkSize; x += 2)
+        {
+            for (int z = zStart; z < zStart + 2 * chunkSize; z += 2)
             {
                 float height = math.remap(0.0f, 1.0f, MinHeight, MaxHeight, terrainNoise.SNoise(x + seed, z + seed));
                 for (int y = 0; y < height; y += 2)
                 {
                     if (y >= height - 2)
                     {
-                        PlaceBlock(x, y, z, grassBlock, transform);
+                        PlaceBlock(x, y, z, grassBlock, chunk.transform);
                     }
-                    else if (y > height - dirtDepth)
+                    else if (y > height - 2 * dirtDepth)
                     {
-                        PlaceBlock(x, y, z, dirtBlock, transform);
+                        PlaceBlock(x, y, z, dirtBlock, chunk.transform);
                     }
                     else
                     {
-                        PlaceBlock(x, y, z, stoneBlock, transform);
+                        PlaceBlock(x, y, z, stoneBlock, chunk.transform);
                     }
                 }
             }

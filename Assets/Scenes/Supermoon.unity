@@ -603,7 +603,7 @@ MonoBehaviour:
   canFly: 1
   moveSpeed: 7
   groundDrag: 5
-  flyDrag: 5
+  flyDrag: 2
   jumpForce: 12
   jumpCooldown: 0.25
   airMultiplier: 0.4
@@ -648,11 +648,12 @@ MonoBehaviour:
   grassBlock: {fileID: 1521313463912813743, guid: bed46e8116b5833439018863dcef9a27, type: 3}
   dirtBlock: {fileID: 3381983981767023603, guid: 14974d9d0e1c29a4daaafd1a2d490a7f, type: 3}
   stoneBlock: {fileID: 6920336129646915876, guid: 5bef4957e94a462448ac9c1dcac58019, type: 3}
-  worldSize: 40
+  worldSize: 64
   dirtDepth: 4
+  chunkSize: 16
   seed: 0
   terrainNoise:
-    waveLength: 25
+    waveLength: 12
     octaves: 5
   MinHeight: 10
   MaxHeight: 30
