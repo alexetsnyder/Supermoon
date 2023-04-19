@@ -600,14 +600,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 876f36c020c91704189bec3040c61ea3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canFly: 0
+  canFly: 1
   moveSpeed: 7
   groundDrag: 5
+  flyDrag: 5
   jumpForce: 12
   jumpCooldown: 0.25
   airMultiplier: 0.4
   readyToJump: 0
   jumpKey: 32
+  downKey: 308
   playerHeight: 2
   whatIsGround:
     serializedVersion: 2

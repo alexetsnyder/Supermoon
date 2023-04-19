@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
     public bool canFly;
     public float moveSpeed;
     public float groundDrag;
+    public float flyDrag;
 
     [Header("Jumping")]
     public float jumpForce;
@@ -15,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Key Binds")]
     public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode downKey = KeyCode.LeftAlt;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -40,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
         if (canFly)
         {
             rb.useGravity = false;
+            rb.drag = flyDrag;
         }
     }
 
@@ -50,14 +53,17 @@ public class PlayerMovement : MonoBehaviour
         ParseInput();
         SpeedControl();
 
-        if (isGrounded)
+        if (!canFly)
         {
-            rb.drag = groundDrag;
-        }
-        else
-        {
-            rb.drag = 0.0f;
-        }
+            if (isGrounded)
+            {
+                rb.drag = groundDrag;
+            }
+            else
+            {
+                rb.drag = 0.0f;
+            }
+        }      
     }
 
     private void FixedUpdate()
@@ -70,13 +76,24 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
-        if (Input.GetKey(jumpKey) && readyToJump && isGrounded)
+        if (Input.GetKey(jumpKey))
         {
-            readyToJump = false;
+            if (canFly)
+            {
+                rb.AddForce(Vector3.up * moveSpeed * 10.0f, ForceMode.Force);
+            }
+            else if (readyToJump && isGrounded)
+            {
+                readyToJump = false;
 
-            Jump();
+                Jump();
 
-            Invoke(nameof(ResetJump), jumpCooldown);
+                Invoke(nameof(ResetJump), jumpCooldown);
+            }      
+        }
+        else if (canFly && Input.GetKey(downKey))
+        {
+            rb.AddForce(Vector3.down * moveSpeed * 10.0f, ForceMode.Force);
         }
     }
 
