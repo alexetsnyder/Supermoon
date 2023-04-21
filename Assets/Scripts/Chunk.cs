@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
+    public int ChunkSize;
+    public int ChunkHeight;
+
+    private Voxels voxels;
+
     private MeshRenderer meshRenderer;
     private MeshFilter meshFilter;
 
@@ -9,6 +14,8 @@ public class Chunk : MonoBehaviour
     {
         meshRenderer = GetComponent<MeshRenderer>();
         meshFilter = GetComponent<MeshFilter>();
+
+        voxels = new Voxels(new Vector3Int(ChunkSize, ChunkHeight, ChunkSize));
     }
 
     private void Start()
@@ -18,13 +25,12 @@ public class Chunk : MonoBehaviour
 
     public void GenerateChunk()
     {
-        Voxel voxel = new Voxel();
-        voxel.CreateVoxel();
+        voxels.GenerateVoxels();
 
         Mesh mesh = new Mesh();
-        mesh.vertices = voxel.vertexArray;
-        mesh.triangles = voxel.triangleArray;
-        mesh.uv = voxel.uvArray;
+        mesh.vertices = voxels.VertexArray;
+        mesh.triangles = voxels.TriangleArray;
+        mesh.uv = voxels.UVArray;
 
         mesh.RecalculateNormals();
 
