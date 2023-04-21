@@ -32,12 +32,25 @@ public class Voxels
         { 2, 3, 6, 7 }, //Right Face
     };
 
+    private readonly Vector3[] Neighbors = new Vector3[6]
+    {
+        new Vector3( 0.0f,  0.0f, -1.0f),
+        new Vector3( 0.0f,  0.0f,  1.0f),
+        new Vector3( 0.0f,  1.0f,  0.0f),
+        new Vector3( 0.0f, -1.0f,  0.0f),
+        new Vector3(-1.0f,  0.0f,  0.0f),
+        new Vector3( 1.0f,  0.0f,  0.0f),
+    };
+
+    private Chunk chunk;
+
     private int index;
     private int triangleIndex;
 
-    public Voxels(Vector3Int size)
+    public Voxels(Chunk chunk, Vector3Int size)
     {
-        Size = size;
+        this.chunk = chunk;
+        this.Size = size;
 
         int voxelCount = Size.x * Size.y * Size.z;
         VertexArray = new Vector3[24 * voxelCount];
@@ -66,7 +79,10 @@ public class Voxels
     {
         for (int face = 0; face < 6; face++)
         {
-            CreateFace(face, position);
+            if (!chunk.HasSolidVoxel(position + Neighbors[face]))
+            {
+                CreateFace(face, position);
+            } 
         }
     }
 

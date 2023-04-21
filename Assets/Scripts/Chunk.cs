@@ -15,12 +15,38 @@ public class Chunk : MonoBehaviour
         meshRenderer = GetComponent<MeshRenderer>();
         meshFilter = GetComponent<MeshFilter>();
 
-        voxels = new Voxels(new Vector3Int(ChunkSize, ChunkHeight, ChunkSize));
+        voxels = new Voxels(this, new Vector3Int(ChunkSize, ChunkHeight, ChunkSize));
     }
 
     private void Start()
     {
         GenerateChunk();
+    }
+
+    private bool IsVoxelInChunk(int x, int y, int z)
+    {
+        if (x < 0 || x >= ChunkSize ||
+            y < 0 || y >= ChunkHeight ||
+            z < 0 || z >= ChunkSize)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool HasSolidVoxel(Vector3 position)
+    {
+        int x = Mathf.FloorToInt(position.x);
+        int y = Mathf.FloorToInt(position.y);
+        int z = Mathf.FloorToInt(position.z);
+        
+        if (!IsVoxelInChunk(x, y, z))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public void GenerateChunk()
