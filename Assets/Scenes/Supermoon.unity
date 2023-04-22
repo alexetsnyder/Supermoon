@@ -265,6 +265,142 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 173409555}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &289864370
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 289864372}
+  - component: {fileID: 289864371}
+  - component: {fileID: 289864373}
+  m_Layer: 0
+  m_Name: World
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &289864371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289864370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d26dd4885907a4c4293e5c4d868126bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ChunkSize: 4
+  ChunkHeight: 8
+  blockMaterial: {fileID: 2100000, guid: e47ab3fba5e2bae4e8cdd8bb3b0c1b31, type: 2}
+  blockTypeArray:
+  - name: Air
+    isSolid: 0
+    frontTextureName: 
+    backTextureName: 
+    topTextureName: 
+    bottomTextureName: 
+    leftTextureName: 
+    rightTextureName: 
+  - name: Bedrock
+    isSolid: 1
+    frontTextureName: bedrock
+    backTextureName: bedrock
+    topTextureName: bedrock
+    bottomTextureName: bedrock
+    leftTextureName: bedrock
+    rightTextureName: bedrock
+  - name: Stone
+    isSolid: 1
+    frontTextureName: stone
+    backTextureName: stone
+    topTextureName: stone
+    bottomTextureName: stone
+    leftTextureName: stone
+    rightTextureName: stone
+  - name: Dirt
+    isSolid: 1
+    frontTextureName: dirt
+    backTextureName: dirt
+    topTextureName: dirt
+    bottomTextureName: dirt
+    leftTextureName: dirt
+    rightTextureName: dirt
+  - name: Grass
+    isSolid: 1
+    frontTextureName: grass_side
+    backTextureName: grass_side
+    topTextureName: grass_top
+    bottomTextureName: dirt
+    leftTextureName: grass_side
+    rightTextureName: grass_side
+--- !u!4 &289864372
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289864370}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.6784043, y: 0.42953253, z: 7.298562}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &289864373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289864370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df211fb7681a06408d591bee90b9335, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TextureSize: 64
+  TextureBlockSize: 16
+  atlasTextures:
+  - name: dirt
+    index: 0
+  - name: grass_top
+    index: 1
+  - name: grass_side
+    index: 2
+  - name: stone
+    index: 3
+  - name: bedrock
+    index: 4
+  - name: oak_log_side
+    index: 5
+  - name: oak_log_top
+    index: 6
+  - name: oak_leaves
+    index: 7
+  - name: sand
+    index: 8
+  - name: red_sand
+    index: 9
+  - name: soul_sand
+    index: 10
+  - name: clay
+    index: 11
+  - name: snow_top
+    index: 12
+  - name: mossy_cobblestone
+    index: 13
+  - name: mycelium_side
+    index: 14
+  - name: mycelium_top
+    index: 15
 --- !u!1 &397479786
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,7 +768,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1750821747
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -98,10 +98,11 @@ public class Voxels
         VertexArray[index + 2] = position + UnitVoxelVertexArray[v3];
         VertexArray[index + 3] = position + UnitVoxelVertexArray[v4];
 
-        UVArray[index] = new Vector2(0.0f, 0.0f);
-        UVArray[index + 1] = new Vector2(0.0f, 1.0f);
-        UVArray[index + 2] = new Vector2(1.0f, 0.0f);
-        UVArray[index + 3] = new Vector2(1.0f, 1.0f);
+        Vector2[] faceUVArray = chunk.GetVoxelUVArray(position, face);
+        UVArray[index] = faceUVArray[0];
+        UVArray[index + 1] = faceUVArray[1];
+        UVArray[index + 2] = faceUVArray[2];
+        UVArray[index + 3] = faceUVArray[3];
 
         TriangleArray[triangleIndex] = index;
         TriangleArray[triangleIndex + 1] = index + 1;
