@@ -154,9 +154,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldSize: 4
-  chunkSize: 4
-  chunkHeight: 8
-  dirtDepth: 2
+  chunkSize: 16
+  chunkHeight: 24
+  dirtDepth: 4
   blockMaterial: {fileID: 2100000, guid: e47ab3fba5e2bae4e8cdd8bb3b0c1b31, type: 2}
   blockTypeArray:
   - name: Air
@@ -270,6 +270,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 625159845}
+  - component: {fileID: 625159846}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -285,7 +286,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 625159844}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -293,6 +294,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &625159846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625159844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e5536189d2a0c549bcc654ec31b5ef0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isGrounded: 0
+  isSprinting: 0
+  readyToJump: 0
+  xSens: 300
+  ySens: 300
+  walkSpeed: 6
+  sprintSpeed: 12
+  jumpForce: 12
+  gravity: 0
+  jumpKey: 32
+  sprintKey: 304
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

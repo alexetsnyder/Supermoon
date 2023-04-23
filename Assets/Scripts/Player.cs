@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -7,42 +8,48 @@ public class Player : MonoBehaviour
     public bool isSprinting;
     public bool readyToJump;
 
-    [Header("Mouse Settings")]
-    public float xSens;
-    public float ySens;
-
     [Header("Movment Settings")]
     public float walkSpeed;
     public float sprintSpeed;
     public float jumpForce;
+    public float gravity;
 
     [Header("Controlls")]
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode sprintKey = KeyCode.LeftShift;
 
+    private Transform playerCamera;
+
     private float verticalInput;
     private float horizontalInput;
+
+    private Vector3 velocity;
+    private float verticalMomentum;
 
     private float mouseX;
     private float mouseY;
 
     private float xRotation;
-    private float yRotation;
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        playerCamera = GameObject.Find("PlayerCamera").transform;
+
+        velocity = new Vector3(0.0f, 0.0f, 0.0f);
     }
 
     private void Update()
     {
         GetPlayerInput();
+        MouseRotation();
     }
 
     private void FixedUpdate()
-    {
-        MouseRotation();
+    {     
+        PlayerMovement();
     }
 
     private void GetPlayerInput()
@@ -71,16 +78,38 @@ public class Player : MonoBehaviour
 
     private void MouseRotation()
     {
-        xRotation -= mouseY * Time.fixedDeltaTime * ySens;
-        yRotation += mouseX * Time.fixedDeltaTime * xSens;
+        xRotation += -mouseY;
+        if (xRotation < -90.0f || xRotation > 90.0f)
+        {
+            xRotation += mouseY;
+            mouseY = 0.0f;
+        }
 
-        xRotation = Mathf.Clamp(xRotation, -90.0f, 90.0f);
-
-        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0.0f);
+        transform.Rotate(Vector3.up * mouseX);
+        playerCamera.Rotate(Vector3.right * -mouseY);
     }
 
     private void PlayerMovement()
     {
+        if (verticalMomentum > gravity)
+        {
+            verticalMomentum += Time.fixedDeltaTime * gravity;
+        }
 
+        float moveSpeed;
+        if (isSprinting)
+        {
+            moveSpeed = sprintSpeed;
+        }
+        else
+        {
+            moveSpeed = walkSpeed;
+        }
+
+        velocity = moveSpeed * Time.fixedDeltaTime * ((transform.forward * verticalInput) + (transform.right * horizontalInput));
+
+        velocity += Vector3.up * verticalMomentum * Time.fixedDeltaTime;
+
+        transform.Translate(velocity, Space.World);
     }
 }
