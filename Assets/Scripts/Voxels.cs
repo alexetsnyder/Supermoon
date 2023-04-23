@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Voxels
 {
-    public Vector3Int Size;
+    public Vector3Int Size { get; set; }
 
     public Vector3[] VertexArray { get; private set; }
 
