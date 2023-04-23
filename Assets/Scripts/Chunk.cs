@@ -16,23 +16,23 @@ public class Chunk
 
     private byte[,,] voxelMap;
 
-    private ChunkID chunkID;
+    private ChunkID chunkId;
     public Vector3 Position
     {
         get
         {
-            float x = chunkID.X * chunkSize;
-            float z = chunkID.Z * chunkSize;
+            float x = chunkId.X * chunkSize;
+            float z = chunkId.Z * chunkSize;
             return new Vector3(x, 0.0f, z);
         }
     }
 
-    public Chunk(World world, ChunkID chunkID)
+    public Chunk(World world, ChunkID chunkId)
     {
         this.world = world;
-        chunkSize = world.ChunkSize;
-        chunkHeight = world.ChunkHeight;
-        this.chunkID = chunkID;
+        chunkSize = world.chunkSize;
+        chunkHeight = world.chunkHeight;
+        this.chunkId = chunkId;
 
         Init();       
     }
@@ -46,7 +46,7 @@ public class Chunk
 
         chunk.transform.SetParent(world.transform);
         chunk.transform.position = Position;
-        chunk.name = chunkID.ToString();
+        chunk.name = chunkId.ToString();
 
         voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
         voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
@@ -63,22 +63,7 @@ public class Chunk
             {
                 for (int z = 0; z < chunkSize; z++)
                 {
-                    if (y >= chunkHeight - 1)
-                    {
-                        voxelMap[x, y, z] = world.GetBlockID("Grass");
-                    }
-                    else if (y >= chunkHeight - 2)
-                    {
-                        voxelMap[x, y, z] = world.GetBlockID("Dirt");
-                    }
-                    else if (y == 0)
-                    {
-                        voxelMap[x, y, z] = world.GetBlockID("Bedrock");
-                    }
-                    else
-                    {
-                        voxelMap[x, y, z] = world.GetBlockID("Stone");
-                    }
+                    voxelMap[x, y, z] = world.GetVoxel(new Vector3(x, y, z) + Position);
                 }
             }
         }
@@ -104,7 +89,7 @@ public class Chunk
         
         if (!IsVoxelInChunk(x, y, z))
         {
-            return false;
+            return world.HasSolidVoxel(position + Position);
         }
 
         return world.blockTypeArray[voxelMap[x, y, z]].isSolid;
@@ -134,6 +119,18 @@ public class Chunk
         mesh.RecalculateNormals();
 
         meshFilter.mesh = mesh;
+    }
+
+    public byte GetVoxelFromGlobalPosition(Vector3 position)
+    {
+        int x = Mathf.FloorToInt(position.x);
+        int y = Mathf.FloorToInt(position.y);
+        int z = Mathf.FloorToInt(position.z);
+
+        x -= (chunkId.X * chunkSize);
+        z -= (chunkId.Z * chunkSize);
+
+        return voxelMap[x, y, z];
     }
 }
 

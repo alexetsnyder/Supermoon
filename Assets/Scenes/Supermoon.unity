@@ -154,8 +154,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldSize: 4
-  ChunkSize: 4
-  ChunkHeight: 8
+  chunkSize: 4
+  chunkHeight: 8
+  dirtDepth: 2
   blockMaterial: {fileID: 2100000, guid: e47ab3fba5e2bae4e8cdd8bb3b0c1b31, type: 2}
   blockTypeArray:
   - name: Air
