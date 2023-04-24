@@ -29,7 +29,6 @@ public class World : MonoBehaviour
     public TextureAtlas Atlas { get; private set; }
 
     private Dictionary<ChunkID, Chunk> chunkDict;
-    private List<ChunkID> activeChunks;
 
     private Dictionary<string, byte> blockTypeLookUp;
 
@@ -38,7 +37,6 @@ public class World : MonoBehaviour
 
     private void Awake()
     {
-        activeChunks = new List<ChunkID>();
         Atlas = GetComponent<TextureAtlas>();
 
         chunkDict = new Dictionary<ChunkID, Chunk>();
@@ -78,14 +76,13 @@ public class World : MonoBehaviour
             {
                 ChunkID chunkId = new ChunkID(x, z);
                 chunkDict.Add(chunkId, new Chunk(this, chunkId));
-                activeChunks.Add(chunkId);
             }
         }    
     }
 
     private void UpdateViewDistance()
     {
-        List<ChunkID> prevActiveChunks = new List<ChunkID>(activeChunks);
+        List<ChunkID> prevActiveChunks = new List<ChunkID>(chunkDict.Keys); 
 
         int xStart = playerChunk.X - ViewDistanceInChunks;
         int xEnd = playerChunk.X + ViewDistanceInChunks;
@@ -103,28 +100,15 @@ public class World : MonoBehaviour
                     {
                         chunkDict.Add(chunkId, new Chunk(this, chunkId));
                     }
-                    else if (!chunkDict[chunkId].IsActive)
-                    {
-                        chunkDict[chunkId].IsActive = true;
-                    }
-
-                    if (!activeChunks.Contains(chunkId))
-                    {
-                        activeChunks.Add(chunkId);
-                    }
-
-                    if (prevActiveChunks.Contains(chunkId))
-                    {
-                        prevActiveChunks.Remove(chunkId);
-                    }
+                    prevActiveChunks.Remove(chunkId);
                 }
             }
         }
 
         foreach (var chunkId in prevActiveChunks)
         {
-            chunkDict[chunkId].IsActive = false;
-            activeChunks.Remove(chunkId);
+            Destroy(chunkDict[chunkId].ChunkObject);
+            chunkDict.Remove(chunkId);
         }
     }
 

@@ -1,4 +1,3 @@
-using System.Drawing;
 using UnityEngine;
 
 public class Chunk
@@ -12,7 +11,7 @@ public class Chunk
     private MeshFilter meshFilter;
 
     private World world;
-    private GameObject chunk;
+    public GameObject ChunkObject { get; private set; }
 
     private byte[,,] voxelMap;
 
@@ -37,9 +36,9 @@ public class Chunk
         set
         {
             isActive = value;
-            if (chunk != null)
+            if (ChunkObject != null)
             {
-                chunk.SetActive(value);
+                ChunkObject.SetActive(value);
             }
         }
     }
@@ -57,14 +56,14 @@ public class Chunk
 
     public void Init()
     {
-        chunk = new GameObject();
-        meshFilter = chunk.AddComponent<MeshFilter>();
-        meshRenderer = chunk.AddComponent<MeshRenderer>();
+        ChunkObject = new GameObject();
+        meshFilter = ChunkObject.AddComponent<MeshFilter>();
+        meshRenderer = ChunkObject.AddComponent<MeshRenderer>();
         meshRenderer.material = world.blockMaterial;
 
-        chunk.transform.SetParent(world.transform);
-        chunk.transform.position = Position;
-        chunk.name = chunkId.ToString();
+        ChunkObject.transform.SetParent(world.transform);
+        ChunkObject.transform.position = Position;
+        ChunkObject.name = chunkId.ToString();
 
         voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
         voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
