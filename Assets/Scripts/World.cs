@@ -5,7 +5,6 @@ using UnityEngine;
 public class World : MonoBehaviour
 {
     [Header("World Attributes")]
-    public int worldSize;
     public int ViewDistanceInChunks;
 
     [Header("Player Attributes")]
@@ -94,14 +93,12 @@ public class World : MonoBehaviour
             for (int z = zStart; z < zEnd; z++)
             {
                 ChunkID chunkId = new ChunkID(x, z);
-                if (IsChunkInWorld(chunkId))
+
+                if (!chunkDict.ContainsKey(chunkId))
                 {
-                    if (!chunkDict.ContainsKey(chunkId))
-                    {
-                        chunkDict.Add(chunkId, new Chunk(this, chunkId));
-                    }
-                    prevActiveChunks.Remove(chunkId);
+                    chunkDict.Add(chunkId, new Chunk(this, chunkId));
                 }
+                prevActiveChunks.Remove(chunkId);
             }
         }
 
@@ -116,7 +113,7 @@ public class World : MonoBehaviour
     {
         ChunkID chunkId = GetChunkID(position);
 
-        if (!IsChunkInWorld(chunkId) || position.y < 0 || position.y > chunkHeight - 1)
+        if (position.y < 0 || position.y > chunkHeight - 1)
         {
             return false;
         }
@@ -128,18 +125,6 @@ public class World : MonoBehaviour
         }
 
         return blockTypeArray[GetVoxel(position)].isSolid;
-    }
-
-    private bool IsChunkInWorld(ChunkID chunkId)
-    {
-        int boundSize = worldSize / 2;
-        if (chunkId.X < -boundSize || chunkId.X > boundSize - 1 ||
-            chunkId.Z < -boundSize || chunkId.Z > boundSize - 1)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     public byte GetVoxel(Vector3 position)
