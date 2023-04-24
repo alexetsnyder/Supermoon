@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -38,10 +40,15 @@ public class World : MonoBehaviour
     private Queue<Action> threadCallbackQueue;
     private Queue<VoxelThreadInfo<MeshData>> meshDataThreadInfoQueue;
 
+    private List<ChunkID> chunksToAdd;
+    private bool isCreatingChunks;
+
     private void Awake()
     {
         threadCallbackQueue = new Queue<Action>();
         meshDataThreadInfoQueue = new Queue<VoxelThreadInfo<MeshData>>();
+
+        chunksToAdd = new List<ChunkID>();
 
         Atlas = GetComponent<TextureAtlas>();
 
@@ -64,6 +71,11 @@ public class World : MonoBehaviour
 
     private void Update()
     {
+        if (!isCreatingChunks && chunksToAdd.Count > 0)
+        {
+            StartCoroutine("GenerateChunks");
+        }
+
         if (threadCallbackQueue.Count > 0)
         {
             for (int i = 0; i < threadCallbackQueue.Count; i++)
@@ -123,7 +135,8 @@ public class World : MonoBehaviour
                 {
                     Chunk newChunk = new Chunk(this, chunkId, false);
                     chunkDict.Add(chunkId, newChunk);
-                    GenerateChunkRequest(newChunk, newChunk.OnPopulatedVoxelMap);
+                    chunksToAdd.Add(chunkId);
+                    //GenerateChunkRequest(newChunk, newChunk.OnPopulatedVoxelMap);
                 }
                 prevActiveChunks.Remove(chunkId);
             }
@@ -134,6 +147,24 @@ public class World : MonoBehaviour
             Destroy(chunkDict[chunkId].ChunkObject);
             chunkDict.Remove(chunkId);
         }
+    }
+
+    private IEnumerator GenerateChunks()
+    {
+        isCreatingChunks = true;
+
+        while (chunksToAdd.Count > 0)
+        {
+            ChunkID chunkId = chunksToAdd.First();    
+            
+            chunkDict[chunkId].CreateChunkGameObject();
+            GenerateChunkRequest(chunkDict[chunkId], chunkDict[chunkId].OnPopulatedVoxelMap);
+            chunksToAdd.Remove(chunkId);
+
+            yield return null;
+        }
+
+        isCreatingChunks = false;
     }
 
     public void GenerateChunkRequest(Chunk chunk, Action callback)

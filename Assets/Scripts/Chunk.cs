@@ -56,6 +56,20 @@ public class Chunk
         this.chunkId = chunkId;
         isActive = true;
 
+        voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
+        voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
+
+        IsVoxelMapGenerated = false;
+
+        if (generateOnLoad)
+        {
+            CreateChunkGameObject();
+            GenerateChunk();
+        }       
+    }
+
+    public void CreateChunkGameObject()
+    {
         ChunkObject = new GameObject();
         meshFilter = ChunkObject.AddComponent<MeshFilter>();
         meshRenderer = ChunkObject.AddComponent<MeshRenderer>();
@@ -64,19 +78,9 @@ public class Chunk
         ChunkObject.transform.SetParent(world.transform);
         ChunkObject.transform.position = Position;
         ChunkObject.name = chunkId.ToString();
-
-        voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
-        voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
-
-        IsVoxelMapGenerated = false;
-
-        if (generateOnLoad)
-        {
-            Init();
-        }       
     }
 
-    public void Init()
+    public void GenerateChunk()
     {
         PopulateVoxelMap();
         GenerateMesh();
