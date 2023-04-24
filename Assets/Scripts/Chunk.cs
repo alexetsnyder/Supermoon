@@ -69,6 +69,11 @@ public class Chunk
         }
     }
 
+    public bool IsVoxelSolid(int x, int y, int z)
+    {
+        return world.blockTypeArray[voxelMap[x, y, z]].isSolid;
+    }
+
     private bool IsVoxelInChunk(int x, int y, int z)
     {
         if (x < 0 || x >= chunkSize ||

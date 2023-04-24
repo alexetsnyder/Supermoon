@@ -16,7 +16,7 @@ public class TerrainGeneration : MonoBehaviour
 
     [Header("Noise")]
     public float seed;
-    public Noise terrainNoise;
+    public OldNoise terrainNoise;
     public int MinHeight;
     public int MaxHeight;
 

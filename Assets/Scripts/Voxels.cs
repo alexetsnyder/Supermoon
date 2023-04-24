@@ -69,7 +69,10 @@ public class Voxels
             {
                 for (int z = 0; z < Size.z; z++)
                 {
-                    CreateVoxel(new Vector3(x, y, z));
+                    if (chunk.IsVoxelSolid(x, y, z))
+                    {
+                        CreateVoxel(new Vector3(x, y, z));
+                    }    
                 }
             }
         }

@@ -4,15 +4,24 @@ using UnityEngine;
 
 public class World : MonoBehaviour
 {
-    [Header("Chunk Attributes")]
+    [Header("World Attributes")]
     public int worldSize;
-    public int chunkSize;
+
+    [Header("Noise Attributes")]
+    public float seed;
+    public float terrainScale;
+
+    [Header("Chunk Attributes")]
     public int chunkHeight;
+    public int chunkSize;
+    public int terrainHeight;
+    public int solidTerrainHeight;
     public int dirtDepth;
 
     [Header("Block Attributes")]
     public Material blockMaterial;
     public BlockType[] blockTypeArray;
+
 
     public TextureAtlas Atlas { get; private set; }
 
@@ -87,26 +96,34 @@ public class World : MonoBehaviour
     {
         int yPos = Mathf.FloorToInt(position.y);
 
+        /* IMMUTABLE PASS */
+
         if (yPos == 0)
         {
             return GetBlockID("Bedrock");
         }
 
-        if (yPos >= chunkHeight - 1)
+        /* BASIC TERRAIN GENERATION */
+
+        Vector2 noisePos = new Vector2(position.x / chunkSize, position.z / chunkSize);
+        float noise = Noise.Get2DPerlinNoise(noisePos, terrainScale, seed);
+        int height = Mathf.FloorToInt(terrainHeight * noise) + solidTerrainHeight;
+
+        if (yPos > height)
+        {
+            return GetBlockID("Air");
+        }
+        if (yPos == height)
         {
             return GetBlockID("Grass");
         }
-        else if (yPos >= chunkHeight - 1 - dirtDepth)
+        else if (yPos >= height - dirtDepth)
         {
             return GetBlockID("Dirt");
         }
-        else if (yPos >= 0)
-        {
-            return GetBlockID("Stone");
-        }
         else
         {
-            return GetBlockID("Air");
+            return GetBlockID("Stone");
         }
     }
 
