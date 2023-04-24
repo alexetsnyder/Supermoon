@@ -1,14 +1,12 @@
+using System.Drawing;
+using System;
 using UnityEngine;
 
 public class Voxels
 {
     public Vector3Int Size { get; set; }
 
-    public Vector3[] VertexArray { get; private set; }
-
-    public int[] TriangleArray { get; private set; }
-
-    public Vector2[] UVArray { get; private set; }
+    public MeshData Data { get; private set; }
 
     private readonly Vector3Int[] UnitVoxelVertexArray = new Vector3Int[8]
     {
@@ -52,10 +50,7 @@ public class Voxels
         this.chunk = chunk;
         this.Size = size;
 
-        int voxelCount = Size.x * Size.y * Size.z;
-        VertexArray = new Vector3[24 * voxelCount];
-        UVArray = new Vector2[24 * voxelCount];
-        TriangleArray = new int[36 * voxelCount];
+        Data = new MeshData(size);
 
         index = 0;
         triangleIndex = 0;
@@ -96,26 +91,54 @@ public class Voxels
         int v3 = VoxelTriangleIndices[face, 2];
         int v4 = VoxelTriangleIndices[face, 3];
 
-        VertexArray[index] = position + UnitVoxelVertexArray[v1];
-        VertexArray[index + 1] = position + UnitVoxelVertexArray[v2];
-        VertexArray[index + 2] = position + UnitVoxelVertexArray[v3];
-        VertexArray[index + 3] = position + UnitVoxelVertexArray[v4];
+        Data.vertexArray[index] = position + UnitVoxelVertexArray[v1];
+        Data.vertexArray[index + 1] = position + UnitVoxelVertexArray[v2];
+        Data.vertexArray[index + 2] = position + UnitVoxelVertexArray[v3];
+        Data.vertexArray[index + 3] = position + UnitVoxelVertexArray[v4];
 
         Vector2[] faceUVArray = chunk.GetVoxelUVArray(position, face);
-        UVArray[index] = faceUVArray[0];
-        UVArray[index + 1] = faceUVArray[1];
-        UVArray[index + 2] = faceUVArray[2];
-        UVArray[index + 3] = faceUVArray[3];
+        Data.uvArray[index] = faceUVArray[0];
+        Data.uvArray[index + 1] = faceUVArray[1];
+        Data.uvArray[index + 2] = faceUVArray[2];
+        Data.uvArray[index + 3] = faceUVArray[3];
 
-        TriangleArray[triangleIndex] = index;
-        TriangleArray[triangleIndex + 1] = index + 1;
-        TriangleArray[triangleIndex + 2] = index + 2;
+        Data.triangleArray[triangleIndex] = index;
+        Data.triangleArray[triangleIndex + 1] = index + 1;
+        Data.triangleArray[triangleIndex + 2] = index + 2;
 
-        TriangleArray[triangleIndex + 3] = index + 2;
-        TriangleArray[triangleIndex + 4] = index + 1;
-        TriangleArray[triangleIndex + 5] = index + 3;
+        Data.triangleArray[triangleIndex + 3] = index + 2;
+        Data.triangleArray[triangleIndex + 4] = index + 1;
+        Data.triangleArray[triangleIndex + 5] = index + 3;
 
         index += 4;
         triangleIndex += 6;
+    }
+}
+
+public struct MeshData
+{
+    public Vector3[] vertexArray;
+    public int[] triangleArray;
+    public Vector2[] uvArray;
+
+    public MeshData(Vector3Int size)
+    {
+        int voxelCount = size.x * size.y * size.z;
+        vertexArray = new Vector3[24 * voxelCount];
+        uvArray = new Vector2[24 * voxelCount];
+        triangleArray = new int[36 * voxelCount];
+    }
+
+    public Mesh CreateMesh()
+    {
+        Mesh mesh = new Mesh();
+
+        mesh.vertices = vertexArray;
+        mesh.triangles = triangleArray;
+        mesh.uv = uvArray;
+
+        mesh.RecalculateNormals();
+
+        return mesh;
     }
 }

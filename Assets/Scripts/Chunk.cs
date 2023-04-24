@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class Chunk
@@ -43,7 +46,9 @@ public class Chunk
         }
     }
 
-    public Chunk(World world, ChunkID chunkId)
+    public bool IsVoxelMapGenerated { get; private set; }
+
+    public Chunk(World world, ChunkID chunkId, bool generateOnLoad)
     {
         this.world = world;
         chunkSize = world.chunkSize;
@@ -51,11 +56,6 @@ public class Chunk
         this.chunkId = chunkId;
         isActive = true;
 
-        Init();       
-    }
-
-    public void Init()
-    {
         ChunkObject = new GameObject();
         meshFilter = ChunkObject.AddComponent<MeshFilter>();
         meshRenderer = ChunkObject.AddComponent<MeshRenderer>();
@@ -68,11 +68,31 @@ public class Chunk
         voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
         voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
 
-        PopulateVoxelMap();
-        GenerateChunk();
+        IsVoxelMapGenerated = false;
+
+        if (generateOnLoad)
+        {
+            Init();
+        }       
     }
 
-    private void PopulateVoxelMap()
+    public void Init()
+    {
+        PopulateVoxelMap();
+        GenerateMesh();
+    }
+
+    public void OnPopulatedVoxelMap()
+    {
+        world.RequestMeshData(this, OnMeshDataCreated);
+    }
+
+    private void OnMeshDataCreated(MeshData meshData)
+    {
+        meshFilter.mesh = meshData.CreateMesh();
+    }
+
+    public void PopulateVoxelMap()
     {
         for (int y = 0; y < chunkHeight; y++)
         {
@@ -84,6 +104,8 @@ public class Chunk
                 }
             }
         }
+
+        IsVoxelMapGenerated = true;
     }
 
     public bool IsVoxelSolid(int x, int y, int z)
@@ -124,23 +146,17 @@ public class Chunk
         return world.Atlas.GetUVArray(world.blockTypeArray[voxel].GetTextureName(face));
     }
 
-    public void GenerateChunk()
+    public void GenerateMesh()
     {
-        voxels.GenerateVoxels();
+        MeshData mesh = GetMeshData();
 
-        AddMesh();
+        meshFilter.mesh = mesh.CreateMesh();
     }
 
-    private void AddMesh()
+    public MeshData GetMeshData()
     {
-        Mesh mesh = new Mesh();
-        mesh.vertices = voxels.VertexArray;
-        mesh.triangles = voxels.TriangleArray;
-        mesh.uv = voxels.UVArray;
-
-        mesh.RecalculateNormals();
-
-        meshFilter.mesh = mesh;
+        voxels.GenerateVoxels();
+        return voxels.Data;
     }
 
     public byte GetVoxelFromGlobalPosition(Vector3 position)

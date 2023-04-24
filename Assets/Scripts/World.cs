@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class World : MonoBehaviour
@@ -34,8 +35,14 @@ public class World : MonoBehaviour
     private ChunkID playerChunk;
     private ChunkID prevPlayerChunk;
 
+    private Queue<Action> threadCallbackQueue;
+    private Queue<VoxelThreadInfo<MeshData>> meshDataThreadInfoQueue;
+
     private void Awake()
     {
+        threadCallbackQueue = new Queue<Action>();
+        meshDataThreadInfoQueue = new Queue<VoxelThreadInfo<MeshData>>();
+
         Atlas = GetComponent<TextureAtlas>();
 
         chunkDict = new Dictionary<ChunkID, Chunk>();
@@ -57,6 +64,24 @@ public class World : MonoBehaviour
 
     private void Update()
     {
+        if (threadCallbackQueue.Count > 0)
+        {
+            for (int i = 0; i < threadCallbackQueue.Count; i++)
+            {
+                Action callback = threadCallbackQueue.Dequeue();
+                callback();
+            }
+        }
+
+        if (meshDataThreadInfoQueue.Count > 0)
+        {
+            for (int i = 0; i < meshDataThreadInfoQueue.Count; i++)
+            {
+                VoxelThreadInfo<MeshData> meshDataThreadInfo = meshDataThreadInfoQueue.Dequeue();
+                meshDataThreadInfo.callback(meshDataThreadInfo.parameter);
+            }
+        }
+
         playerChunk = GetChunkID(player.position);
         if (!playerChunk.Equals(prevPlayerChunk))
         {
@@ -74,7 +99,7 @@ public class World : MonoBehaviour
             for (int z = start; z < end; z++)
             {
                 ChunkID chunkId = new ChunkID(x, z);
-                chunkDict.Add(chunkId, new Chunk(this, chunkId));
+                chunkDict.Add(chunkId, new Chunk(this, chunkId, true));
             }
         }    
     }
@@ -96,7 +121,9 @@ public class World : MonoBehaviour
 
                 if (!chunkDict.ContainsKey(chunkId))
                 {
-                    chunkDict.Add(chunkId, new Chunk(this, chunkId));
+                    Chunk newChunk = new Chunk(this, chunkId, false);
+                    chunkDict.Add(chunkId, newChunk);
+                    GenerateChunkRequest(newChunk, newChunk.OnPopulatedVoxelMap);
                 }
                 prevActiveChunks.Remove(chunkId);
             }
@@ -109,6 +136,44 @@ public class World : MonoBehaviour
         }
     }
 
+    public void GenerateChunkRequest(Chunk chunk, Action callback)
+    {
+        ThreadStart threadStart = delegate
+        {
+            GenerateChunkThread(chunk, callback);
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    public void GenerateChunkThread(Chunk chunk, Action callback)
+    {
+        chunk.PopulateVoxelMap();
+        lock (threadCallbackQueue)
+        {
+            threadCallbackQueue.Enqueue(callback);
+        }
+    }
+
+    public void RequestMeshData(Chunk chunk, Action<MeshData> callback)
+    {
+        ThreadStart threadStart = delegate
+        {
+            GenerateMeshDataThread(chunk, callback);
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    public void GenerateMeshDataThread(Chunk chunk, Action<MeshData> callback)
+    {
+        MeshData meshData = chunk.GetMeshData();
+        lock (meshDataThreadInfoQueue)
+        {
+            meshDataThreadInfoQueue.Enqueue(new VoxelThreadInfo<MeshData>(callback, meshData));
+        }
+    }
+
     public bool HasSolidVoxel(Vector3 position)
     {
         ChunkID chunkId = GetChunkID(position);
@@ -118,7 +183,7 @@ public class World : MonoBehaviour
             return false;
         }
 
-        if (chunkDict.ContainsKey(chunkId))
+        if (chunkDict.ContainsKey(chunkId) && chunkDict[chunkId].IsVoxelMapGenerated)
         {
             byte voxel = chunkDict[chunkId].GetVoxelFromGlobalPosition(position);
             return blockTypeArray[voxel].isSolid;
@@ -173,6 +238,18 @@ public class World : MonoBehaviour
         int z = Mathf.FloorToInt(position.z / chunkSize);
 
         return new ChunkID(x, z);
+    }
+}
+
+public struct VoxelThreadInfo<T>
+{
+    public readonly Action<T> callback;
+    public readonly T parameter;
+
+    public VoxelThreadInfo(Action<T> callback, T parameter)
+    {
+        this.callback = callback;
+        this.parameter = parameter;
     }
 }
 
