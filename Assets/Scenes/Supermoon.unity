@@ -153,8 +153,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d26dd4885907a4c4293e5c4d868126bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldSize: 4
-  seed: 0
+  worldSize: 100
+  ViewDistanceInChunks: 5
+  player: {fileID: 625159845}
+  seed: 100
   terrainScale: 0.25
   chunkHeight: 128
   chunkSize: 16
@@ -313,7 +315,7 @@ MonoBehaviour:
   isGrounded: 0
   isSprinting: 0
   readyToJump: 0
-  playerRadius: 0.25
+  playerRadius: 0.15
   playerHeight: 2
   walkSpeed: 6
   sprintSpeed: 12
@@ -465,7 +467,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0

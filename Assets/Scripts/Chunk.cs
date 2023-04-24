@@ -27,12 +27,30 @@ public class Chunk
         }
     }
 
+    private bool isActive;
+    public bool IsActive
+    {
+        get
+        {
+            return isActive;
+        }
+        set
+        {
+            isActive = value;
+            if (chunk != null)
+            {
+                chunk.SetActive(value);
+            }
+        }
+    }
+
     public Chunk(World world, ChunkID chunkId)
     {
         this.world = world;
         chunkSize = world.chunkSize;
         chunkHeight = world.chunkHeight;
         this.chunkId = chunkId;
+        isActive = true;
 
         Init();       
     }

@@ -6,6 +6,10 @@ public class World : MonoBehaviour
 {
     [Header("World Attributes")]
     public int worldSize;
+    public int ViewDistanceInChunks;
+
+    [Header("Player Attributes")]
+    public Transform player;
 
     [Header("Noise Attributes")]
     public float seed;
@@ -22,13 +26,15 @@ public class World : MonoBehaviour
     public Material blockMaterial;
     public BlockType[] blockTypeArray;
 
-
     public TextureAtlas Atlas { get; private set; }
 
     private Dictionary<ChunkID, Chunk> chunkDict;
     private List<ChunkID> activeChunks;
 
     private Dictionary<string, byte> blockTypeLookUp;
+
+    private ChunkID playerChunk;
+    private ChunkID prevPlayerChunk;
 
     private void Awake()
     {
@@ -47,19 +53,79 @@ public class World : MonoBehaviour
     private void Start()
     {
         GenerateWorld();
+
+        playerChunk = GetChunkID(player.position);
+        prevPlayerChunk = playerChunk;
+    }
+
+    private void Update()
+    {
+        playerChunk = GetChunkID(player.position);
+        if (!playerChunk.Equals(prevPlayerChunk))
+        {
+            UpdateViewDistance();
+            prevPlayerChunk = playerChunk;
+        }
     }
 
     private void GenerateWorld()
     {
-        for (int x = -worldSize / 2; x < worldSize / 2; x++)
+        int start = -ViewDistanceInChunks;
+        int end = ViewDistanceInChunks;
+        for (int x = start; x < end; x++)
         {
-            for (int z = -worldSize / 2; z < worldSize / 2; z++)
+            for (int z = start; z < end; z++)
             {
                 ChunkID chunkId = new ChunkID(x, z);
                 chunkDict.Add(chunkId, new Chunk(this, chunkId));
                 activeChunks.Add(chunkId);
             }
         }    
+    }
+
+    private void UpdateViewDistance()
+    {
+        List<ChunkID> prevActiveChunks = new List<ChunkID>(activeChunks);
+
+        int xStart = playerChunk.X - ViewDistanceInChunks;
+        int xEnd = playerChunk.X + ViewDistanceInChunks;
+        int zStart = playerChunk.Z - ViewDistanceInChunks;
+        int zEnd = playerChunk.Z + ViewDistanceInChunks;
+
+        for (int x = xStart; x < xEnd; x++)
+        {
+            for (int z = zStart; z < zEnd; z++)
+            {
+                ChunkID chunkId = new ChunkID(x, z);
+                if (IsChunkInWorld(chunkId))
+                {
+                    if (!chunkDict.ContainsKey(chunkId))
+                    {
+                        chunkDict.Add(chunkId, new Chunk(this, chunkId));
+                    }
+                    else if (!chunkDict[chunkId].IsActive)
+                    {
+                        chunkDict[chunkId].IsActive = true;
+                    }
+
+                    if (!activeChunks.Contains(chunkId))
+                    {
+                        activeChunks.Add(chunkId);
+                    }
+
+                    if (prevActiveChunks.Contains(chunkId))
+                    {
+                        prevActiveChunks.Remove(chunkId);
+                    }
+                }
+            }
+        }
+
+        foreach (var chunkId in prevActiveChunks)
+        {
+            chunkDict[chunkId].IsActive = false;
+            activeChunks.Remove(chunkId);
+        }
     }
 
     public bool HasSolidVoxel(Vector3 position)

@@ -35,6 +35,8 @@ public class Player : MonoBehaviour
 
     private float xRotation;
 
+    private bool jumpRequest;
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -55,7 +57,12 @@ public class Player : MonoBehaviour
     }
 
     private void FixedUpdate()
-    {     
+    {
+        if (jumpRequest)
+        {
+            Jump();
+        }
+
         PlayerMovement();
     }
 
@@ -69,11 +76,7 @@ public class Player : MonoBehaviour
 
         if (readyToJump && isGrounded && Input.GetKey(jumpKey))
         {
-            readyToJump = false;
-
-            Jump();
-
-            Invoke(nameof(ResetJump), jumpCooldown);
+            jumpRequest = true;
         }
 
         if (Input.GetKeyDown(sprintKey))
@@ -90,7 +93,11 @@ public class Player : MonoBehaviour
     private void Jump()
     {
         isGrounded = false;
-        verticalMomentum = jumpForce;   
+        readyToJump = false;
+        jumpRequest = false;
+        verticalMomentum = jumpForce;
+
+        Invoke(nameof(ResetJump), jumpCooldown);
     }
 
     private void ResetJump()
@@ -200,7 +207,7 @@ public class Player : MonoBehaviour
         Vector3 position = transform.position;
         return (
                 world.HasSolidVoxel(new Vector3(position.x, position.y, position.z + playerRadius)) ||
-                world.HasSolidVoxel(new Vector3(position.x, position.y + 1.0f, position.z + playerRadius)) 
+                world.HasSolidVoxel(new Vector3(position.x, position.y + 1.5f, position.z + playerRadius)) 
                );
     }
 
