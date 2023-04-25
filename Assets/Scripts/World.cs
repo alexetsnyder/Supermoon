@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -37,18 +35,13 @@ public class World : MonoBehaviour
     private ChunkID playerChunk;
     private ChunkID prevPlayerChunk;
 
-    private Queue<Action> threadCallbackQueue;
+    private Queue<VoxelThreadInfo<byte[,,]>> voxelDataThreadInfoQueue;
     private Queue<VoxelThreadInfo<MeshData>> meshDataThreadInfoQueue;
-
-    private List<ChunkID> chunksToAdd;
-    private bool isCreatingChunks;
 
     private void Awake()
     {
-        threadCallbackQueue = new Queue<Action>();
+        voxelDataThreadInfoQueue = new Queue<VoxelThreadInfo<byte[,,]>>();
         meshDataThreadInfoQueue = new Queue<VoxelThreadInfo<MeshData>>();
-
-        chunksToAdd = new List<ChunkID>();
 
         Atlas = GetComponent<TextureAtlas>();
 
@@ -71,17 +64,12 @@ public class World : MonoBehaviour
 
     private void Update()
     {
-        if (!isCreatingChunks && chunksToAdd.Count > 0)
+        if (voxelDataThreadInfoQueue.Count > 0)
         {
-            StartCoroutine("GenerateChunks");
-        }
-
-        if (threadCallbackQueue.Count > 0)
-        {
-            for (int i = 0; i < threadCallbackQueue.Count; i++)
+            for (int i = 0; i < voxelDataThreadInfoQueue.Count; i++)
             {
-                Action callback = threadCallbackQueue.Dequeue();
-                callback();
+                VoxelThreadInfo<byte[,,]> voxelDataThreadInfo = voxelDataThreadInfoQueue.Dequeue();
+                voxelDataThreadInfo.callback(voxelDataThreadInfo.parameter);
             }
         }
 
@@ -113,12 +101,12 @@ public class World : MonoBehaviour
                 ChunkID chunkId = new ChunkID(x, z);
                 chunkDict.Add(chunkId, new Chunk(this, chunkId, true));
             }
-        }    
+        }
     }
 
     private void UpdateViewDistance()
     {
-        List<ChunkID> prevActiveChunks = new List<ChunkID>(chunkDict.Keys); 
+        List<ChunkID> prevActiveChunks = new List<ChunkID>(chunkDict.Keys);
 
         int xStart = playerChunk.X - ViewDistanceInChunks;
         int xEnd = playerChunk.X + ViewDistanceInChunks;
@@ -135,8 +123,7 @@ public class World : MonoBehaviour
                 {
                     Chunk newChunk = new Chunk(this, chunkId, false);
                     chunkDict.Add(chunkId, newChunk);
-                    chunksToAdd.Add(chunkId);
-                    //GenerateChunkRequest(newChunk, newChunk.OnPopulatedVoxelMap);
+                    GenerateChunkRequest(newChunk, newChunk.OnPopulatedVoxelMap);
                 }
                 prevActiveChunks.Remove(chunkId);
             }
@@ -149,25 +136,7 @@ public class World : MonoBehaviour
         }
     }
 
-    private IEnumerator GenerateChunks()
-    {
-        isCreatingChunks = true;
-
-        while (chunksToAdd.Count > 0)
-        {
-            ChunkID chunkId = chunksToAdd.First();    
-            
-            chunkDict[chunkId].CreateChunkGameObject();
-            GenerateChunkRequest(chunkDict[chunkId], chunkDict[chunkId].OnPopulatedVoxelMap);
-            chunksToAdd.Remove(chunkId);
-
-            yield return null;
-        }
-
-        isCreatingChunks = false;
-    }
-
-    public void GenerateChunkRequest(Chunk chunk, Action callback)
+    public void GenerateChunkRequest(Chunk chunk, Action<byte[,,]> callback)
     {
         ThreadStart threadStart = delegate
         {
@@ -177,12 +146,12 @@ public class World : MonoBehaviour
         new Thread(threadStart).Start();
     }
 
-    public void GenerateChunkThread(Chunk chunk, Action callback)
+    public void GenerateChunkThread(Chunk chunk, Action<byte[,,]> callback)
     {
-        chunk.PopulateVoxelMap();
-        lock (threadCallbackQueue)
+        byte[,,] voxelMap = chunk.GetVoxelMap();
+        lock (voxelDataThreadInfoQueue)
         {
-            threadCallbackQueue.Enqueue(callback);
+            voxelDataThreadInfoQueue.Enqueue(new VoxelThreadInfo<byte[,,]>(callback, voxelMap));
         }
     }
 
@@ -209,9 +178,15 @@ public class World : MonoBehaviour
     {
         ChunkID chunkId = GetChunkID(position);
 
-        if (position.y < 0 || position.y > chunkHeight - 1)
+        if (position.y > chunkHeight - 1)
         {
             return false;
+        }
+
+        //Don't draw bottom of chunk
+        if (position.y < 0)
+        {
+            return true;
         }
 
         if (chunkDict.ContainsKey(chunkId) && chunkDict[chunkId].IsVoxelMapGenerated)

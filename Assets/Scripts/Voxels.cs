@@ -1,5 +1,3 @@
-using System.Drawing;
-using System;
 using UnityEngine;
 
 public class Voxels

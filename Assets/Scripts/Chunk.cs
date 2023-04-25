@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 public class Chunk
@@ -56,14 +53,15 @@ public class Chunk
         this.chunkId = chunkId;
         isActive = true;
 
-        voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
+        //voxelMap = new byte[chunkSize, chunkHeight, chunkSize];
         voxels = new Voxels(this, new Vector3Int(chunkSize, chunkHeight, chunkSize));
+
+        CreateChunkGameObject();
 
         IsVoxelMapGenerated = false;
 
         if (generateOnLoad)
         {
-            CreateChunkGameObject();
             GenerateChunk();
         }       
     }
@@ -86,29 +84,42 @@ public class Chunk
         GenerateMesh();
     }
 
-    public void OnPopulatedVoxelMap()
+    public void OnPopulatedVoxelMap(byte[,,] voxelMap)
     {
+        this.voxelMap = voxelMap;
+        IsVoxelMapGenerated = true;
         world.RequestMeshData(this, OnMeshDataCreated);
     }
 
     private void OnMeshDataCreated(MeshData meshData)
     {
-        meshFilter.mesh = meshData.CreateMesh();
+        if (meshFilter != null)
+        {
+            meshFilter.mesh = meshData.CreateMesh();
+        }    
     }
 
-    public void PopulateVoxelMap()
+    public byte[,,] GetVoxelMap()
     {
+        byte[,,] map = new byte[chunkSize, chunkHeight, chunkSize];
+
         for (int y = 0; y < chunkHeight; y++)
         {
             for (int x = 0; x < chunkSize; x++)
             {
                 for (int z = 0; z < chunkSize; z++)
                 {
-                    voxelMap[x, y, z] = world.GetVoxel(new Vector3(x, y, z) + Position);
+                    map[x, y, z] = world.GetVoxel(new Vector3(x, y, z) + Position);
                 }
             }
         }
 
+        return map;
+    }
+
+    public void PopulateVoxelMap()
+    {
+        voxelMap = GetVoxelMap();
         IsVoxelMapGenerated = true;
     }
 
